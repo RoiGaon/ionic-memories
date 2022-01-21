@@ -1,0 +1,6 @@
+{
+	"appId": "com.ionic.photomemories",
+	"appName": "Photo-Memories",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
