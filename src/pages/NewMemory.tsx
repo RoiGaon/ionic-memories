@@ -1,4 +1,5 @@
 import React from "react";
+import { useHistory } from "react-router";
 import {
   IonBackButton,
   IonButton,
@@ -23,13 +24,17 @@ import "./NewMemory.css";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { base64FromPath } from "@ionic/react-hooks/filesystem";
+import { useMemoriesContextProvider as contextProvider } from "../contextStore/memories-context";
 
 const NewMemory: React.FC = () => {
   const [takenPhoto, setTakenPhoto] =
     React.useState<{ path: string; preview: string }>();
   const [choosenMemoryType, setChoosenMemoryType] = React.useState<
     "good" | "bad"
-  >();
+  >("good");
+  const memoriesCtx = contextProvider();
+  const history = useHistory();
+  const titleInputRef = React.useRef<HTMLIonInputElement>(null);
 
   const selectMemoryTypeHandler = (event: CustomEvent) => {
     const selectedMemoryType = event.detail.value;
@@ -53,6 +58,16 @@ const NewMemory: React.FC = () => {
   };
 
   const addMemoryHandler = async () => {
+    const enteredTitle = titleInputRef.current?.value;
+
+    if (
+      !enteredTitle ||
+      enteredTitle.toString().trim().length === 0 ||
+      !takenPhoto ||
+      !choosenMemoryType
+    )
+      return;
+
     const fileName = new Date().getTime() + ".jpeg";
     const base64 = await base64FromPath(takenPhoto!.preview);
     await Filesystem.writeFile({
@@ -60,6 +75,9 @@ const NewMemory: React.FC = () => {
       data: base64,
       directory: Directory.Data,
     });
+
+    memoriesCtx.addMemory(fileName, enteredTitle.toString(), choosenMemoryType);
+    history.length > 0 ? history.goBack() : history.replace("/good-memories");
   };
 
   return (
@@ -78,13 +96,16 @@ const NewMemory: React.FC = () => {
             <IonCol>
               <IonItem>
                 <IonLabel position="floating">Memory Title</IonLabel>
-                <IonInput type="text" />
+                <IonInput type="text" ref={titleInputRef} />
               </IonItem>
             </IonCol>
           </IonRow>
           <IonRow className="ion-margin-bottom">
             <IonCol className="ion-text-center" size="4" offset="4">
-              <IonSelect value="good" onIonChange={selectMemoryTypeHandler}>
+              <IonSelect
+                value={choosenMemoryType}
+                onIonChange={selectMemoryTypeHandler}
+              >
                 <IonSelectOption value="good">Good Memory</IonSelectOption>
                 <IonSelectOption value="bad">Bad Memory</IonSelectOption>
               </IonSelect>
