@@ -3,9 +3,16 @@ export interface Memory {
   imagePath: string;
   title: string;
   type: "good" | "bad";
+  base64Url: string;
 }
 
 export interface MemoriesContextType {
   memories: Memory[];
-  addMemory: (path: string, title: string, type: "good" | "bad") => void;
+  addMemory: (
+    path: string,
+    base64: string,
+    title: string,
+    type: "good" | "bad"
+  ) => void;
+  initContext: () => void;
 }

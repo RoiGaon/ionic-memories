@@ -32,12 +32,19 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./theme/theme.css";
-import { MemoriesContextProvider } from "contextStore/memories-context";
+import { useMemoriesContextProvider as contextProvider } from "contextStore/memories-context";
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <MemoriesContextProvider>
+const App: React.FC = () => {
+  const memoriesCtx = contextProvider();
+  const { initContext } = memoriesCtx;
+
+  React.useEffect(() => {
+    initContext();
+  }, [initContext]);
+
+  return (
+    <IonApp>
+      <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>
             <Route path="/bad-memories" component={BadMemory} />
@@ -56,9 +63,9 @@ const App: React.FC = () => (
             </IonTabButton>
           </IonTabBar>
         </IonTabs>
-      </MemoriesContextProvider>
-    </IonReactRouter>
-  </IonApp>
-);
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 export default App;
