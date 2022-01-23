@@ -8,7 +8,6 @@ import {
   IonContent,
   IonGrid,
   IonHeader,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -19,69 +18,27 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { camera } from "ionicons/icons";
-import "./NewMemory.css";
-import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { base64FromPath } from "@ionic/react-hooks/filesystem";
 import { useMemoriesContextProvider as contextProvider } from "../contextStore/memories-context";
-import { Capacitor } from "@capacitor/core";
+import { ImagePicker } from "components";
+import { Photo } from "types/photoType";
+import { MemoryType } from "types/memoriesType";
 
 const NewMemory: React.FC = () => {
-  const [takenPhoto, setTakenPhoto] =
-    React.useState<{ path: string | undefined; preview: string }>();
-  const [choosenMemoryType, setChoosenMemoryType] = React.useState<
-    "good" | "bad"
-  >("good");
+  const [takenPhoto, setTakenPhoto] = React.useState<Photo>();
+  const [choosenMemoryType, setChoosenMemoryType] =
+    React.useState<MemoryType>("good");
   const memoriesCtx = contextProvider();
   const history = useHistory();
 
   const titleInputRef = React.useRef<HTMLIonInputElement>(null);
-  const filePickerRef = React.useRef<HTMLInputElement>(null);
+
+  const photoPickerHandler = (photo: Photo) => {
+    setTakenPhoto(photo);
+  };
 
   const selectMemoryTypeHandler = (event: CustomEvent) => {
     const selectedMemoryType = event.detail.value;
     setChoosenMemoryType(selectedMemoryType);
-  };
-
-  const openFilePicker = () => {
-    filePickerRef.current!.click();
-  };
-
-  const pickFileHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target!.files![0];
-    const fr = new FileReader();
-    fr.onload = () => {
-      setTakenPhoto({ path: undefined, preview: fr.result!.toString() });
-    };
-    fr.readAsDataURL(file);
-  };
-
-  const takePhotoHandler = async () => {
-    if (!Capacitor.isPluginAvailable("Camera")) {
-      console.log("camera is not available");
-      openFilePicker();
-      return;
-    }
-    try {
-      const photo = await Camera.getPhoto({
-        resultType: CameraResultType.Uri,
-        source: CameraSource.Camera,
-        quality: 80,
-        width: 500,
-      });
-
-      if (!photo || !photo.webPath) return;
-
-      setTakenPhoto({
-        path: photo.path,
-        preview: photo.webPath,
-      });
-    } catch (error) {
-      if (Capacitor.isPluginAvailable("Camera")) return;
-      console.log("some error " + error);
-      openFilePicker();
-    }
   };
 
   const addMemoryHandler = async () => {
@@ -95,17 +52,8 @@ const NewMemory: React.FC = () => {
     )
       return;
 
-    const fileName = new Date().getTime() + ".jpeg";
-    const base64 = await base64FromPath(takenPhoto!.preview);
-    await Filesystem.writeFile({
-      path: fileName,
-      data: base64,
-      directory: Directory.Data,
-    });
-
     memoriesCtx.addMemory(
-      fileName,
-      base64,
+      takenPhoto,
       enteredTitle.toString(),
       choosenMemoryType
     );
@@ -145,23 +93,7 @@ const NewMemory: React.FC = () => {
           </IonRow>
           <IonRow className="ion-text-center">
             <IonCol>
-              <div className="image-preview">
-                {!takenPhoto ? (
-                  <h3>No Photo Choosen.</h3>
-                ) : (
-                  <img src={takenPhoto.preview} alt="Preview" />
-                )}
-              </div>
-              <IonButton fill="clear" onClick={takePhotoHandler}>
-                <IonIcon icon={camera} slot="start" />
-                <IonLabel>Take Photo</IonLabel>
-              </IonButton>
-              <input
-                type="file"
-                hidden
-                ref={filePickerRef}
-                onChange={pickFileHandler}
-              />
+              <ImagePicker onImagePick={photoPickerHandler} />
             </IonCol>
           </IonRow>
           <IonRow className="ion-margin-top">

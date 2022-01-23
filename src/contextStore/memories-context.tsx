@@ -1,7 +1,9 @@
 import React from "react";
 import { Storage } from "@capacitor/storage";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { MemoriesContextType, Memory } from "../types/memoriesType";
+import { base64FromPath } from "@ionic/react-hooks/filesystem";
+import { MemoriesContextType, Memory, MemoryType } from "../types/memoriesType";
+import { Photo } from "types/photoType";
 
 const MemoriesContext = React.createContext<MemoriesContextType>({
   memories: [],
@@ -26,18 +28,21 @@ export const MemoriesContextProvider: React.FC<Props> = ({ children }) => {
     Storage.set({ key: "memories", value: JSON.stringify(storeableMemories) });
   }, [memories]);
 
-  const addMemory = (
-    path: string,
-    base64Data: string,
-    title: string,
-    type: "good" | "bad"
-  ) => {
+  const addMemory = async (photo: Photo, title: string, type: MemoryType) => {
+    const fileName = new Date().getTime() + ".jpeg";
+    const base64 = await base64FromPath(photo.preview);
+    await Filesystem.writeFile({
+      path: fileName,
+      data: base64,
+      directory: Directory.Data,
+    });
+
     const newMemory: Memory = {
       id: Math.random().toString(),
       title,
-      imagePath: path,
+      imagePath: fileName,
       type,
-      base64Url: base64Data,
+      base64Url: base64,
     };
 
     setMemories((precMemories) => [...precMemories, newMemory]);

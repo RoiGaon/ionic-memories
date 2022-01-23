@@ -1,18 +1,17 @@
+import { Photo } from "./photoType";
+
 export interface Memory {
   id: string;
   imagePath: string;
   title: string;
-  type: "good" | "bad";
+  type: MemoryType;
   base64Url: string;
 }
 
 export interface MemoriesContextType {
   memories: Memory[];
-  addMemory: (
-    path: string,
-    base64: string,
-    title: string,
-    type: "good" | "bad"
-  ) => void;
+  addMemory: (photo: Photo, title: string, type: MemoryType) => void;
   initContext: () => void;
 }
+
+export type MemoryType = "good" | "bad";

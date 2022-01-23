@@ -5,13 +5,15 @@ import {
   IonIcon,
   IonLabel,
   IonRouterOutlet,
+  IonSpinner,
   IonTabBar,
   IonTabButton,
   IonTabs,
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { happy, sad } from "ionicons/icons";
-import { BadMemory, GoodMemory, NewMemory } from "./pages";
+import { BadMemory, GoodMemory } from "./pages";
+import { useMemoriesContextProvider as contextProvider } from "contextStore/memories-context";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -32,7 +34,8 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./theme/theme.css";
-import { useMemoriesContextProvider as contextProvider } from "contextStore/memories-context";
+
+const NewMemory = React.lazy(() => import("./pages/NewMemory"));
 
 const App: React.FC = () => {
   const memoriesCtx = contextProvider();
@@ -45,6 +48,7 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
+        <React.Suspense fallback={<IonSpinner />} />
         <IonTabs>
           <IonRouterOutlet>
             <Switch>
