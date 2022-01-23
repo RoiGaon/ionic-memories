@@ -1,5 +1,5 @@
 import React from "react";
-import { useHistory } from "react-router";
+import { useHistory } from "react-router-dom";
 import {
   IonBackButton,
   IonButton,
@@ -25,36 +25,63 @@ import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { base64FromPath } from "@ionic/react-hooks/filesystem";
 import { useMemoriesContextProvider as contextProvider } from "../contextStore/memories-context";
+import { Capacitor } from "@capacitor/core";
 
 const NewMemory: React.FC = () => {
   const [takenPhoto, setTakenPhoto] =
-    React.useState<{ path: string; preview: string }>();
+    React.useState<{ path: string | undefined; preview: string }>();
   const [choosenMemoryType, setChoosenMemoryType] = React.useState<
     "good" | "bad"
   >("good");
   const memoriesCtx = contextProvider();
   const history = useHistory();
+
   const titleInputRef = React.useRef<HTMLIonInputElement>(null);
+  const filePickerRef = React.useRef<HTMLInputElement>(null);
 
   const selectMemoryTypeHandler = (event: CustomEvent) => {
     const selectedMemoryType = event.detail.value;
     setChoosenMemoryType(selectedMemoryType);
   };
 
+  const openFilePicker = () => {
+    filePickerRef.current!.click();
+  };
+
+  const pickFileHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target!.files![0];
+    const fr = new FileReader();
+    fr.onload = () => {
+      setTakenPhoto({ path: undefined, preview: fr.result!.toString() });
+    };
+    fr.readAsDataURL(file);
+  };
+
   const takePhotoHandler = async () => {
-    const photo = await Camera.getPhoto({
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      quality: 80,
-      width: 500,
-    });
+    if (!Capacitor.isPluginAvailable("Camera")) {
+      console.log("camera is not available");
+      openFilePicker();
+      return;
+    }
+    try {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+        quality: 80,
+        width: 500,
+      });
 
-    if (!photo || !photo.path || !photo.webPath) return;
+      if (!photo || !photo.webPath) return;
 
-    setTakenPhoto({
-      path: photo.path,
-      preview: photo.webPath,
-    });
+      setTakenPhoto({
+        path: photo.path,
+        preview: photo.webPath,
+      });
+    } catch (error) {
+      if (Capacitor.isPluginAvailable("Camera")) return;
+      console.log("some error " + error);
+      openFilePicker();
+    }
   };
 
   const addMemoryHandler = async () => {
@@ -129,6 +156,12 @@ const NewMemory: React.FC = () => {
                 <IonIcon icon={camera} slot="start" />
                 <IonLabel>Take Photo</IonLabel>
               </IonButton>
+              <input
+                type="file"
+                hidden
+                ref={filePickerRef}
+                onChange={pickFileHandler}
+              />
             </IonCol>
           </IonRow>
           <IonRow className="ion-margin-top">

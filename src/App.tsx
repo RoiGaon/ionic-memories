@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Route, Redirect, Switch } from "react-router-dom";
 import {
   IonApp,
   IonIcon,
@@ -47,10 +47,12 @@ const App: React.FC = () => {
       <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>
-            <Route path="/bad-memories" component={BadMemory} />
-            <Route path="/good-memories" component={GoodMemory} />
-            <Route path="/new-memory" component={NewMemory} />
-            <Redirect to="/good-memories" />
+            <Switch>
+              <Route path="/bad-memories" component={BadMemory} />
+              <Route path="/good-memories" component={GoodMemory} />
+              <Route path="/new-memory" component={NewMemory} />
+              <Redirect to="/good-memories" />
+            </Switch>
           </IonRouterOutlet>
           <IonTabBar slot="bottom">
             <IonTabButton href="/good-memories" tab="good">
