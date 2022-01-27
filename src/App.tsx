@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Redirect, Switch } from "react-router-dom";
+import { Route, Redirect } from "react-router-dom";
 import {
   IonApp,
   IonIcon,
@@ -48,27 +48,26 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
-        <React.Suspense fallback={<IonSpinner />} />
-        <IonTabs>
-          <IonRouterOutlet>
-            <Switch>
+        <React.Suspense fallback={<IonSpinner />}>
+          <IonTabs>
+            <IonRouterOutlet>
               <Route path="/bad-memories" component={BadMemory} />
               <Route path="/good-memories" component={GoodMemory} />
               <Route path="/new-memory" component={NewMemory} />
               <Redirect to="/good-memories" />
-            </Switch>
-          </IonRouterOutlet>
-          <IonTabBar slot="bottom">
-            <IonTabButton href="/good-memories" tab="good">
-              <IonIcon icon={happy} />
-              <IonLabel>Good Memories</IonLabel>
-            </IonTabButton>
-            <IonTabButton href="/bad-memories" tab="bad">
-              <IonIcon icon={sad} />
-              <IonLabel>Bad Memories</IonLabel>
-            </IonTabButton>
-          </IonTabBar>
-        </IonTabs>
+            </IonRouterOutlet>
+            <IonTabBar slot="bottom">
+              <IonTabButton href="/good-memories" tab="good">
+                <IonIcon icon={happy} />
+                <IonLabel>Good Memories</IonLabel>
+              </IonTabButton>
+              <IonTabButton href="/bad-memories" tab="bad">
+                <IonIcon icon={sad} />
+                <IonLabel>Bad Memories</IonLabel>
+              </IonTabButton>
+            </IonTabBar>
+          </IonTabs>
+        </React.Suspense>
       </IonReactRouter>
     </IonApp>
   );
